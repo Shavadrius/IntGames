@@ -39,7 +39,7 @@ public sealed class Participant: Entity
     public ParticipationStatus Status { get; private set; }
     public bool IsPaid { get; private set; }
 
-    public Result<Participant> Update(
+    public Participant Update(
         FirstName firstName,
         LastName lastName,
         Patronymic? patronymic = null,
@@ -52,6 +52,8 @@ public sealed class Participant: Entity
 
         return this;
     }
+
+    public bool IsRegistered => Status is ParticipationStatus.Approved || Status is ParticipationStatus.AwaitingPayment;
 
     public static Result<Participant> FromPlayer(Player player, Guid tournamentId)
     {
@@ -67,13 +69,8 @@ public sealed class Participant: Entity
 
     public Result<Participant> Approve(bool isPaymentRequired = false)
     {
-        if (!isPaymentRequired || IsPaid)
-        {
-            Status = ParticipationStatus.Approved;
-            return this;
-        }
-
-        return ParticipantErrors.InvalidFlowDirection("Cannot approve untill unpaid.");
+        Status = !isPaymentRequired || IsPaid ? ParticipationStatus.Approved : ParticipationStatus.AwaitingPayment;
+        return this;
     }
 
     public Result<Participant> Reject()
@@ -84,7 +81,7 @@ public sealed class Participant: Entity
 
     public Result<Participant> ConfirmPayment()
     {
-        if (Status != ParticipationStatus.PendingApproval)
+        if (Status != ParticipationStatus.AwaitingPayment)
         {
             return ParticipantErrors.InvalidFlowDirection("Participant invalid status.");
         }
