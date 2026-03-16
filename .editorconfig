@@ -1,0 +1,17 @@
+root = true
+
+[*.cs]
+# CA1040: Avoid empty interfaces — marker interfaces are used intentionally (DDD, MediatR)
+dotnet_diagnostic.CA1040.severity = none
+
+# CA1062: Validate arguments of public methods — redundant with nullable reference types enabled
+dotnet_diagnostic.CA1062.severity = none
+
+# CA1711: Identifiers should not have incorrect suffix — domain names like Permission are valid
+dotnet_diagnostic.CA1711.severity = none
+
+# CA2007: Consider calling ConfigureAwait — not needed in ASP.NET Core applications
+dotnet_diagnostic.CA2007.severity = none
+
+# CA2225: Operator overloads have named alternates — not needed for C#-only projects
+dotnet_diagnostic.CA2225.severity = none
