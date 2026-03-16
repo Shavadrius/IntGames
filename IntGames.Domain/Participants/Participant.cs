@@ -55,7 +55,7 @@ public sealed class Participant: Entity
 
     public bool IsRegistered => Status is ParticipationStatus.Approved || Status is ParticipationStatus.AwaitingPayment;
 
-    public static Result<Participant> FromPlayer(Player player, Guid tournamentId)
+    public static Participant FromPlayer(Player player, Guid tournamentId)
     {
         return new Participant(Guid.NewGuid(),
             playerId: player.Id,
