@@ -2,6 +2,7 @@
 using IntGames.Domain.Participants;
 using IntGames.Domain.Shared;
 using IntGames.Domain.TournamentRequests;
+using System.Net.NetworkInformation;
 
 namespace IntGames.Domain.Tournaments;
 
@@ -50,12 +51,12 @@ public sealed class Tournament : Entity
     {
         if (request.TournamentId != Id)
         {
-            return Result.Failure(IntGamesError.Validation("Request.TournamentId", "Wrong tournament in request."));
+            return Result.Failure(TournamentErrors.WrongTournamentInRequest);
         }
 
         if (_requests.Any(r => r.Id == request.Id))
         {
-            return Result.Failure(IntGamesError.Validation("Request.Id", "Requests Duplication."));
+            return Result.Failure(TournamentErrors.RequestDuplication);
         }
 
         switch (Type)
@@ -89,6 +90,9 @@ public sealed class Tournament : Entity
             return Result.Failure(TournamentErrors.RequestNotFound);
         }
 
+        if (request.Status != RequestStatus.PendingApproval)
+            return Result.Failure(TournamentErrors.RequestAlreadyProcessed);
+
         if (!request.Participants.Any())
         {
             return Result.Failure(TournamentRequestErrors.ParticipantsAreEmpty);
@@ -97,6 +101,23 @@ public sealed class Tournament : Entity
         if (request.Participants.Any(p => CheckIfPlayerIsApproved(p.PlayerId, requestId)))
         {
             return Result.Failure(TournamentErrors.PlayersAreNotUnique);
+        }
+
+        switch (Type)
+        {
+            case TournamentType.Chgk:
+                {
+                    /*TODO: Implement later*/
+                    break;
+                }
+            case TournamentType.SiGame:
+                {
+                    if (request.Participants.Count != 1)
+                    {
+                        return Result.Failure(TournamentErrors.WrongTournamentType);
+                    }
+                    break;
+                }
         }
 
         request.Approve(IsPaymentRequired);

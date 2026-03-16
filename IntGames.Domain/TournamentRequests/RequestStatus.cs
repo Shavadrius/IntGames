@@ -1,6 +1,6 @@
 ﻿namespace IntGames.Domain.TournamentRequests;
 
-public enum Status
+public enum RequestStatus
 {
     /// <summary>
     /// Participant has submitted a registration request, awaiting approval

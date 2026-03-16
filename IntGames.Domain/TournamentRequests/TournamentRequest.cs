@@ -14,7 +14,7 @@ public sealed class TournamentRequest : Entity
     {
         TournamentId = tournamentId;
         Type = type;
-        Status = Status.PendingApproval;
+        Status = RequestStatus.PendingApproval;
         Name = name;
     }
 
@@ -23,10 +23,10 @@ public sealed class TournamentRequest : Entity
     public Guid TournamentId { get; private init; }
     public Name Name { get; private set; }
     public RequestType Type { get; private init; }
-    public Status Status { get; private set; }
+    public RequestStatus Status { get; private set; }
     public bool IsPaid { get; private set; }
 
-    public bool IsRegistered => Status is Status.Approved || Status is Status.AwaitingPayment;
+    public bool IsRegistered => Status is RequestStatus.Approved || Status is RequestStatus.AwaitingPayment;
 
     public static TournamentRequest Create(
         Guid tournamentId,
@@ -71,24 +71,24 @@ public sealed class TournamentRequest : Entity
 
     public Result Approve(bool isPaymentRequired = false)
     {
-        Status = !isPaymentRequired || IsPaid ? Status.Approved : Status.AwaitingPayment;
+        Status = !isPaymentRequired || IsPaid ? RequestStatus.Approved : RequestStatus.AwaitingPayment;
         return Result.Success();
     }
 
     public Result Reject()
     {
-        Status = Status.Rejected;
+        Status = RequestStatus.Rejected;
         return Result.Success();
     }
 
     public Result ConfirmPayment()
     {
-        if (Status != Status.AwaitingPayment)
+        if (Status != RequestStatus.AwaitingPayment)
         {
             return Result.Failure(TournamentRequestErrors.InvalidFlowDirection("Participant invalid status."));
         }
 
-        Status = Status.Approved;
+        Status = RequestStatus.Approved;
         IsPaid = true;
 
         return Result.Success();
