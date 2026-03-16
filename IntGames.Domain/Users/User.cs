@@ -16,7 +16,7 @@ public sealed class User(
     public LastName? LastName { get; private set; } = lastName;
     public Patronymic? Patronymic { get; private set; } = patronymic;
 
-    public static User Create(
+    public static Result<User> Create(
         Email email,
         FirstName? firstName = null,
         LastName? lastName = null,

@@ -21,22 +21,24 @@ public sealed class Player(
     public int? Month => Birthday?.Month;
     public int? Year => Birthday?.Year;
 
-    public void BindUser(User user)
+    public Result<Player> BindUser(User user)
     {
         if (user.FirstName is null)
         {
-            throw new ArgumentException("User first name is null.");
+            return PlayerErrors.FirstNameIsEmpty;
         }
         
         if (user.LastName is null)
         {
-            throw new ArgumentException("User last name is null.");
+            return PlayerErrors.LastNameIsEmpty;
         }
 
         UserId = user.Id;
         FirstName = user.FirstName;
         LastName = user.LastName;
         Patronymic = user.Patronymic;
+
+        return this;
     }
 
     public void Verify()

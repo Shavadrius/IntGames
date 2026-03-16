@@ -1,7 +1,10 @@
-﻿namespace IntGames.Domain.Shared;
+﻿using IntGames.Domain.Abstractions;
+
+namespace IntGames.Domain.Shared;
 
 public record DateRange()
 {
+    public static readonly IntGamesError Invalid = new("DateRange.Invalid", "Date Range is invalid.", ErrorType.Validation);
     public DateTimeOffset Start { get; init; }
     public DateTimeOffset? End { get; private set; }
 
@@ -11,11 +14,11 @@ public record DateRange()
 
     public bool IsOngoing => End is null;
 
-    public static DateRange Create(DateTimeOffset start, DateTimeOffset? end = null)
+    public static Result<DateRange> Create(DateTimeOffset start, DateTimeOffset? end = null)
     {
         if (end is not null && start > end)
         {
-            throw new ArgumentException("End date cannot be more than start date.");
+            return Invalid;
         }
 
         return new DateRange
@@ -25,12 +28,5 @@ public record DateRange()
         };
     }
 
-    public void SetEndDate(DateTimeOffset end)
-    {
-        if (Start > end)
-        {
-            throw new ArgumentException("End date cannot be more than start date.");
-        }
-        End = end;
-    }
+    public Result<DateRange> WithEndDate(DateTimeOffset end) => Create(Start, end);
 }

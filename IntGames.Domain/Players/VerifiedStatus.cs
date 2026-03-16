@@ -2,7 +2,6 @@
 
 public enum VerifiedStatus
 {
-    None = 0,
-    Verified = 1,
-    Unverified = 2,
+    Verified = 0,
+    Unverified = 1,
 }
