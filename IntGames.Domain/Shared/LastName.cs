@@ -5,11 +5,11 @@ namespace IntGames.Domain.Shared;
 public record LastName
 {
     public static IntGamesError Invalid => IntGamesError.Validation("LastName", "Last Name is null or empty.");
-    protected LastName(string value) => Value = value;
+    private LastName(string value) => Value = value;
 
     public static Result<LastName> Create(string value)
     {
-        if (string.IsNullOrEmpty(value))
+        if (string.IsNullOrWhiteSpace(value))
         {
             return Invalid;
         }

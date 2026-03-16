@@ -1,5 +1,9 @@
 root = true
 
+# Ensure all files end with a newline (POSIX standard, cleaner diffs)
+[*]
+insert_final_newline = true
+
 [*.cs]
 # CA1040: Avoid empty interfaces — marker interfaces are used intentionally (DDD, MediatR)
 dotnet_diagnostic.CA1040.severity = none
