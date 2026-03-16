@@ -19,20 +19,47 @@ internal sealed class RegisterUserCommandHandler(
         RegisterUserCommand request, 
         CancellationToken cancellationToken)
     {
-        var userCreationRequest = User.Create(
-            Email.Create(request.Email).Value,
-            request.FirstName is null ? null : FirstName.Create(request.FirstName).Value,
-            request.LastName is null ? null : LastName.Create(request.LastName).Value,
-            request.Patronymic is null ? null : Patronymic.Create(request.Patronymic).Value);
+        var createEmailResult = Email.Create(request.Email);
+        var createFirstNameResult = request.FirstName is not null ? FirstName.Create(request.FirstName) : null;
+        var createLastNameResult = request.LastName is not null ? LastName.Create(request.LastName) : null;
+        var createPatronymicResult = request.Patronymic is not null ? Patronymic.Create(request.Patronymic) : null;
 
-        var user = userCreationRequest.Value;
+        if (createEmailResult.IsFailure)
+            return Result.Failure<Guid>(createEmailResult.Error);
 
-        var registerUserRequest = await _authenticationService.RegisterAsync(
+        if (createFirstNameResult?.IsFailure == true)
+            return Result.Failure<Guid>(createFirstNameResult.Error);
+
+        if (createLastNameResult?.IsFailure == true)
+            return Result.Failure<Guid>(createLastNameResult.Error);
+
+        if (createPatronymicResult?.IsFailure == true)
+            return Result.Failure<Guid>(createPatronymicResult.Error);
+
+        var createUserResult = User.Create(
+            createEmailResult.Value,
+            createFirstNameResult?.Value,
+            createLastNameResult?.Value,
+            createPatronymicResult?.Value);
+
+        if (createUserResult.IsFailure)
+        {
+            return Result.Failure<Guid>(createUserResult.Error);
+        }
+
+        var user = createUserResult.Value;
+
+        var registerUserResult = await _authenticationService.RegisterAsync(
             user,
             request.Password,
             cancellationToken);
 
-        user.SetIdentityId(registerUserRequest.Value);
+        if (registerUserResult.IsFailure)
+        {
+            return Result.Failure<Guid>(registerUserResult.Error);
+        }
+
+        user.SetIdentityId(registerUserResult.Value);
 
         _userRepository.Add(user);
 
