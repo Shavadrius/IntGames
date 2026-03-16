@@ -46,28 +46,16 @@ public sealed class Tournament : Entity
         return [.. _requests.Where(r => r.IsRegistered).SelectMany(r => r.Participants)];
     }
 
-    public void AddRequest(TournamentRequest request)
+    public Result AddRequest(TournamentRequest request)
     {
-        _requests.Add(request);
-    }
-
-    public Result ApproveRequest(Guid requestId)
-    {
-        var request = _requests.FirstOrDefault(t => t.Id == requestId);
-
-        if (request == null)
+        if (request.TournamentId != Id)
         {
-            return Result.Failure(TournamentErrors.RequestNotFound);
+            return Result.Failure(IntGamesError.Validation("Request.TournamentId", "Wrong tournament in request."));
         }
 
-        if (!request.Participants.Any())
+        if (_requests.Any(r => r.Id == request.Id))
         {
-            return Result.Failure(TournamentRequestErrors.ParticipantsAreEmpty);
-        }
-
-        if (request.Participants.Any(p => CheckIfPlayerIsApproved(p.PlayerId)))
-        {
-            return Result.Failure(TournamentErrors.PlayersAreNotUnique);
+            return Result.Failure(IntGamesError.Validation("Request.Id", "Requests Duplication."));
         }
 
         switch (Type)
@@ -87,13 +75,39 @@ public sealed class Tournament : Entity
                 }
         }
 
+        _requests.Add(request);
+
+        return Result.Success();
+    }
+
+    public Result ApproveRequest(Guid requestId)
+    {
+        var request = _requests.FirstOrDefault(t => t.Id == requestId);
+
+        if (request == null)
+        {
+            return Result.Failure(TournamentErrors.RequestNotFound);
+        }
+
+        if (!request.Participants.Any())
+        {
+            return Result.Failure(TournamentRequestErrors.ParticipantsAreEmpty);
+        }
+
+        if (request.Participants.Any(p => CheckIfPlayerIsApproved(p.PlayerId, requestId)))
+        {
+            return Result.Failure(TournamentErrors.PlayersAreNotUnique);
+        }
+
         request.Approve(IsPaymentRequired);
 
         return Result.Success();
     }
 
-    private bool CheckIfPlayerIsApproved(Guid playerId)
+    private bool CheckIfPlayerIsApproved(Guid playerId, Guid requestId)
     {
-        return _requests.FirstOrDefault(r => r.IsRegistered && r.Participants.Any(p => p.PlayerId == playerId)) is not null;
+        return _requests
+            .Where(r => r.Id != requestId)
+            .FirstOrDefault(r => r.IsRegistered && r.Participants.Any(p => p.PlayerId == playerId)) is not null;
     }
 }
