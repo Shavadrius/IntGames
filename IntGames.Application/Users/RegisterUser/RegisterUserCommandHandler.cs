@@ -19,35 +19,27 @@ internal sealed class RegisterUserCommandHandler(
         RegisterUserCommand request, 
         CancellationToken cancellationToken)
     {
-        var createEmailResult = Email.Create(request.Email);
-        var createFirstNameResult = request.FirstName is not null ? FirstName.Create(request.FirstName) : null;
-        var createLastNameResult = request.LastName is not null ? LastName.Create(request.LastName) : null;
-        var createPatronymicResult = request.Patronymic is not null ? Patronymic.Create(request.Patronymic) : null;
+        var createFieldsResult = Result.Combine(
+                Email.Create(request.Email),
+                ResultExtensions.CreateOptional(request.FirstName, FirstName.Create),
+                ResultExtensions.CreateOptional(request.LastName, LastName.Create),
+                ResultExtensions.CreateOptional(request.Patronymic, Patronymic.Create));
 
-        if (createEmailResult.IsFailure)
-            return Result.Failure<Guid>(createEmailResult.Error);
-
-        if (createFirstNameResult?.IsFailure == true)
-            return Result.Failure<Guid>(createFirstNameResult.Error);
-
-        if (createLastNameResult?.IsFailure == true)
-            return Result.Failure<Guid>(createLastNameResult.Error);
-
-        if (createPatronymicResult?.IsFailure == true)
-            return Result.Failure<Guid>(createPatronymicResult.Error);
-
-        var createUserResult = User.Create(
-            createEmailResult.Value,
-            createFirstNameResult?.Value,
-            createLastNameResult?.Value,
-            createPatronymicResult?.Value);
-
-        if (createUserResult.IsFailure)
+        if (createFieldsResult.IsFailure)
         {
-            return Result.Failure<Guid>(createUserResult.Error);
+            return Result.Failure<Guid>(createFieldsResult.Error);
         }
 
-        var user = createUserResult.Value;
+        (Email email, FirstName? firstName, LastName? lastName, Patronymic? patronymic) = createFieldsResult.Value;
+
+        var userResult = User.Create(email, firstName, lastName, patronymic);
+
+        if (userResult.IsFailure)
+        {
+            return Result.Failure<Guid>(userResult.Error);
+        }
+
+        var user = userResult.Value;
 
         var registerUserResult = await _authenticationService.RegisterAsync(
             user,

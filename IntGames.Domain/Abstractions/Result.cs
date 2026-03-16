@@ -29,6 +29,34 @@ public class Result
 
     public static Result<T> Create<T>(T? value) =>
         value is not null ? Success(value) : Failure<T>(IntGamesError.NullValue);
+
+    //extensions
+    public static Result<(T1, T2)> Combine<T1, T2>(
+    Result<T1> r1, Result<T2> r2)
+    {
+        if (r1.IsFailure) return Failure<(T1, T2)>(r1.Error);
+        if (r2.IsFailure) return Failure<(T1, T2)>(r2.Error);
+        return Success((r1.Value, r2.Value));
+    }
+
+    public static Result<(T1, T2, T3)> Combine<T1, T2, T3>(
+        Result<T1> r1, Result<T2> r2, Result<T3> r3)
+    {
+        if (r1.IsFailure) return Failure<(T1, T2, T3)>(r1.Error);
+        if (r2.IsFailure) return Failure<(T1, T2, T3)>(r2.Error);
+        if (r3.IsFailure) return Failure<(T1, T2, T3)>(r3.Error);
+        return Success((r1.Value, r2.Value, r3.Value));
+    }
+
+    public static Result<(T1, T2, T3, T4)> Combine<T1, T2, T3, T4>(
+        Result<T1> r1, Result<T2> r2, Result<T3> r3, Result<T4> r4)
+    {
+        if (r1.IsFailure) return Failure<(T1, T2, T3, T4)>(r1.Error);
+        if (r2.IsFailure) return Failure<(T1, T2, T3, T4)>(r2.Error);
+        if (r3.IsFailure) return Failure<(T1, T2, T3, T4)>(r3.Error);
+        if (r4.IsFailure) return Failure<(T1, T2, T3, T4)>(r4.Error);
+        return Success((r1.Value, r2.Value, r3.Value, r4.Value));
+    }
 }
 
 public class Result<T>(T? value, bool isSuccess, IntGamesError error) : Result(isSuccess, error)
