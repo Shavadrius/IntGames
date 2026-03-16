@@ -2,8 +2,10 @@
 
 namespace IntGames.Domain.Shared;
 
-public record DateRange()
+public record DateRange
 {
+    private DateRange() { }
+
     public static readonly IntGamesError Invalid = new("DateRange.Invalid", "Date Range is invalid.", ErrorType.Validation);
     public DateTimeOffset Start { get; init; }
     public DateTimeOffset? End { get; private set; }

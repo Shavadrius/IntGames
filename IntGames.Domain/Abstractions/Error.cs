@@ -11,7 +11,6 @@ public record IntGamesError(string Code, string Message, ErrorType ErrorType)
 public enum ErrorType
 {
     None = 0,
-    NullValue = 1,
+    Validation = 1,
     NotFound = 2,
-    Validation = 3,
 }

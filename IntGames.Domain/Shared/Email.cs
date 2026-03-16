@@ -3,8 +3,14 @@ using System.Net.Mail;
 
 namespace IntGames.Domain.Shared;
 
-public record Email(string Value) {
+public record Email 
+{
+    private Email(string value) => Value = value;
+    
     public static IntGamesError Invalid(string message) => IntGamesError.Validation("Email", message);
+    
+    public string Value { get; }
+    
     public static Result<Email> Create(string email)
     {
         if (string.IsNullOrEmpty(email))
@@ -30,4 +36,4 @@ public record Email(string Value) {
         }
         catch { return false; }
     }
-};
+}
