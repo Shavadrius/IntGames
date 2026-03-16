@@ -6,7 +6,7 @@ namespace IntGames.Domain.TournamentRequests;
 
 public sealed class TournamentRequest : Entity
 {
-    public readonly int MaxCapacity = 24;
+    public const int MaxCapacity = 24;
     private TournamentRequest(
         Guid id,
         Guid tournamentId,
@@ -19,12 +19,13 @@ public sealed class TournamentRequest : Entity
         Name = name;
     }
 
-    private readonly List<Player> _players = [];
-    public IReadOnlyList<Player> Players => _players.AsReadOnly();
+    private readonly List<Participant> participants = [];
+    public IReadOnlyList<Participant> Participants => participants.AsReadOnly();
     public Guid TournamentId { get; private init; }
     public Name Name { get; private set; }
     public RequestType Type { get; private init; }
     public ParticipationStatus Status { get; private set; }
+    public bool IsPaid { get; private set; }
 
     public bool IsRegistered => Status is ParticipationStatus.Approved || Status is ParticipationStatus.AwaitingPayment;
 
@@ -40,28 +41,55 @@ public sealed class TournamentRequest : Entity
             name);
     }
 
-    public Result AddParticipant(Player player)
+    public Result AddParticipant(Participant participant)
     {
-        if (_players.Count >= MaxCapacity)
+        if (participants.Count >= MaxCapacity)
         {
             return Result.Failure(TournamentRequestErrors.MaxCapacity(MaxCapacity));
         }
-        var existingPlayer = _players.FirstOrDefault(p => p.Id == player.Id);
-        if (existingPlayer is not null)
+
+        var existingPlayer = participants.FirstOrDefault(p => p.PlayerId == participant.PlayerId);
+
+        if (existingPlayer is null)
         {
-            _players.Add(player);
+            participants.Add(participant);
         }
 
         return Result.Success();
     }
 
-    public Result RemoveParticipant(Guid playerId)
+    public Result RemoveParticipant(Guid participantId)
     {
-        var existingPlayer = _players.FirstOrDefault(p => p.Id == playerId);
+        var existingPlayer = participants.FirstOrDefault(p => p.Id == participantId);
         if (existingPlayer is not null)
         {
-            _players.Remove(existingPlayer);
+            participants.Remove(existingPlayer);
         }
+        return Result.Success();
+    }
+
+    public Result Approve(bool isPaymentRequired = false)
+    {
+        Status = !isPaymentRequired || IsPaid ? ParticipationStatus.Approved : ParticipationStatus.AwaitingPayment;
+        return Result.Success();
+    }
+
+    public Result Reject()
+    {
+        Status = ParticipationStatus.Rejected;
+        return Result.Success();
+    }
+
+    public Result ConfirmPayment()
+    {
+        if (Status != ParticipationStatus.AwaitingPayment)
+        {
+            return Result.Failure(TournamentRequestErrors.InvalidFlowDirection("Participant invalid status."));
+        }
+
+        Status = ParticipationStatus.Approved;
+        IsPaid = true;
+
         return Result.Success();
     }
 }

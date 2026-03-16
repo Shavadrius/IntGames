@@ -20,12 +20,8 @@ public sealed class Tournament : Entity
         IsPaymentRequired = isPaymentRequired;
     }
 
-    private readonly List<Participant> _participants = [];
     private readonly List<TournamentRequest> _requests = [];
 
-
-    public IReadOnlyList<Participant> Participants => _participants.AsReadOnly();
-    public IReadOnlyList<TournamentRequest> Teams => _requests.Where(t => t.IsRegistered).ToList().AsReadOnly();
     public TournamentType Type { get; private init; }
     public Title Title { get; private set; }
     public DateRange DateRange { get; private set; }
@@ -45,6 +41,11 @@ public sealed class Tournament : Entity
             isPaymentRequired);
     }
 
+    public IReadOnlyList<Participant> GetRegisteredParticipants()
+    {
+        return [.. _requests.Where(r => r.IsRegistered).SelectMany(r => r.Participants)];
+    }
+
     public void AddRequest(TournamentRequest request)
     {
         _requests.Add(request);
@@ -59,25 +60,40 @@ public sealed class Tournament : Entity
             return Result.Failure(TournamentErrors.RequestNotFound);
         }
 
-        var participants = request.Players.Select(x => Participant.FromPlayer(x, Id));
-
-        if (!participants.Any())
+        if (!request.Participants.Any())
         {
             return Result.Failure(TournamentRequestErrors.ParticipantsAreEmpty);
         }
 
-        if (participants.Any(p => CheckIfPlayerIsApproved(p.PlayerId)))
+        if (request.Participants.Any(p => CheckIfPlayerIsApproved(p.PlayerId)))
         {
             return Result.Failure(TournamentErrors.PlayersAreNotUnique);
         }
 
-        _participants.AddRange(participants);
+        switch (Type)
+        {
+            case TournamentType.Chgk:
+                {
+                    /*TODO: Implement later*/
+                    break;
+                }
+            case TournamentType.SiGame:
+                {
+                    if (request.Participants.Count != 1)
+                    {
+                        return Result.Failure(TournamentErrors.WrongTournamentType);
+                    }
+                    break;
+                }
+        }
+
+        request.Approve(IsPaymentRequired);
 
         return Result.Success();
     }
 
     private bool CheckIfPlayerIsApproved(Guid playerId)
     {
-        return _participants.FirstOrDefault(p => p.PlayerId == playerId)?.IsRegistered ?? false;
+        return _requests.FirstOrDefault(r => r.IsRegistered && r.Participants.Any(p => p.PlayerId == playerId)) is not null;
     }
 }
