@@ -22,7 +22,7 @@ public record Email
 
         if (!IsValid(email))
         {
-            return Invalid($"Invalid email format: {email}.");
+            return Invalid("Invalid email format.");
         }
         return new Email(email);
     }

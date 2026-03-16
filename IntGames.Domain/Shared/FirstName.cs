@@ -1,3 +1,5 @@
-﻿namespace IntGames.Domain.Shared;
+﻿using IntGames.Domain.Abstractions;
 
-public record FirstName(string Value);
+namespace IntGames.Domain.Shared;
+
+public record FirstName(string Value) : StringValueObject(Value);

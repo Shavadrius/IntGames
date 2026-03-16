@@ -1,3 +1,5 @@
-﻿namespace IntGames.Domain.Shared;
+﻿using IntGames.Domain.Abstractions;
 
-public record Patronymic(string Value);
+namespace IntGames.Domain.Shared;
+
+public record Patronymic(string Value) : StringValueObject(Value);

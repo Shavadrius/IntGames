@@ -7,8 +7,8 @@ public record DateRange
     private DateRange() { }
 
     public static readonly IntGamesError Invalid = new("DateRange.Invalid", "Date Range is invalid.", ErrorType.Validation);
-    public DateTimeOffset Start { get; init; }
-    public DateTimeOffset? End { get; private set; }
+    public DateTimeOffset Start { get; private init; }
+    public DateTimeOffset? End { get; private init; }
 
     public int? DurationInDays => End is not null
         ? (int)((End - Start).Value.TotalDays)
