@@ -3,6 +3,7 @@
     <File Path=".editorconfig" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="IntGames.Application/IntGames.Application.csproj" Id="7d7bb597-0105-401d-aa28-4728436b7b77" />
     <Project Path="IntGames.Domain/IntGames.Domain.csproj" />
   </Folder>
 </Solution>

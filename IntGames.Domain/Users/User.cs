@@ -15,6 +15,7 @@ public sealed class User(
     public FirstName? FirstName { get; private set; } = firstName;
     public LastName? LastName { get; private set; } = lastName;
     public Patronymic? Patronymic { get; private set; } = patronymic;
+    public string IdentityId { get; private set; } = string.Empty;
 
     public static Result<User> Create(
         Email email,
@@ -27,5 +28,10 @@ public sealed class User(
         user.RegisterDomainEvent(new UserCreateDomainEvent(user.Id));
 
         return user;
+    }
+
+    public void SetIdentityId(string identityId)
+    {
+        IdentityId = identityId;
     }
 }
