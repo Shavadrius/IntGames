@@ -2,7 +2,6 @@
 using IntGames.Domain.Participants;
 using IntGames.Domain.Shared;
 using IntGames.Domain.TournamentRequests;
-using System.Net.NetworkInformation;
 
 namespace IntGames.Domain.Tournaments;
 
@@ -59,21 +58,11 @@ public sealed class Tournament : Entity
             return Result.Failure(TournamentErrors.RequestDuplication);
         }
 
-        switch (Type)
+        var validateParticipantsCountResult = ValidateParticipantsCount(request);
+
+        if (validateParticipantsCountResult.IsFailure)
         {
-            case TournamentType.Chgk:
-                {
-                    /*TODO: Implement later*/
-                    break;
-                }
-            case TournamentType.SiGame:
-                {
-                    if (request.Participants.Count != 1)
-                    {
-                        return Result.Failure(TournamentErrors.WrongTournamentType);
-                    }
-                    break;
-                }
+            return validateParticipantsCountResult;
         }
 
         _requests.Add(request);
@@ -91,7 +80,9 @@ public sealed class Tournament : Entity
         }
 
         if (request.Status != RequestStatus.PendingApproval)
+        {
             return Result.Failure(TournamentErrors.RequestAlreadyProcessed);
+        }
 
         if (!request.Participants.Any())
         {
@@ -103,21 +94,11 @@ public sealed class Tournament : Entity
             return Result.Failure(TournamentErrors.PlayersAreNotUnique);
         }
 
-        switch (Type)
+        var validateParticipantsCountResult = ValidateParticipantsCount(request);
+
+        if (validateParticipantsCountResult.IsFailure)
         {
-            case TournamentType.Chgk:
-                {
-                    /*TODO: Implement later*/
-                    break;
-                }
-            case TournamentType.SiGame:
-                {
-                    if (request.Participants.Count != 1)
-                    {
-                        return Result.Failure(TournamentErrors.WrongTournamentType);
-                    }
-                    break;
-                }
+            return validateParticipantsCountResult;
         }
 
         request.Approve(IsPaymentRequired);
@@ -130,5 +111,15 @@ public sealed class Tournament : Entity
         return _requests
             .Where(r => r.Id != requestId)
             .FirstOrDefault(r => r.IsRegistered && r.Participants.Any(p => p.PlayerId == playerId)) is not null;
+    }
+
+    private Result ValidateParticipantsCount(TournamentRequest request)
+    {
+        return Type switch
+        {
+            TournamentType.SiGame when request.Participants.Count != 1
+                => Result.Failure(TournamentErrors.WrongTournamentType),
+            _ => Result.Success()
+        };
     }
 }
