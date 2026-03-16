@@ -8,17 +8,17 @@ public enum ParticipationStatus
     PendingApproval = 0,
 
     /// <summary>
+    /// Registration has been approved, awaiting payment (for paid tournaments)
+    /// </summary>
+    AwaitingPayment = 1,
+
+    /// <summary>
     /// Registration has been approved (and payment received if required)
     /// </summary>
-    Approved = 1,
+    Approved = 2,
 
     /// <summary>
     /// Registration has been rejected by the organizer
     /// </summary>
-    Rejected = 2,
-
-    /// <summary>
-    /// Registration has been approved, awaiting payment (for paid tournaments)
-    /// </summary>
-    AwaitingPayment = 3,
+    Rejected = 3,
 }
